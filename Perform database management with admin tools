@@ -1,0 +1,85 @@
+import mysql.connector
+from mysql.connector import Error
+
+# Database credentials
+DB_CONFIG = {
+    'user': 'root',
+    'password': 'my-secret-pw',
+    'host': 'localhost',
+    'database': 'test_db'
+}
+
+# Helper function to execute SQL commands
+def execute_query(query, params=None):
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        cursor = connection.cursor()
+        cursor.execute(query, params)
+        connection.commit()
+        print("Query executed successfully")
+    except Error as e:
+        print(f"Error: {e}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Create a new database
+def create_database(db_name):
+    query = f"CREATE DATABASE IF NOT EXISTS {db_name}"
+    execute_query(query)
+
+# Create a new user
+def create_user(username, password):
+    query = f"CREATE USER IF NOT EXISTS '{username}'@'localhost' IDENTIFIED BY '{password}'"
+    execute_query(query)
+
+# Grant privileges to a user
+def grant_privileges(username, db_name):
+    query = f"GRANT ALL PRIVILEGES ON {db_name}.* TO '{username}'@'localhost'"
+    execute_query(query)
+
+# Drop a database
+def drop_database(db_name):
+    query = f"DROP DATABASE IF EXISTS {db_name}"
+    execute_query(query)
+
+# Drop a user
+def drop_user(username):
+    query = f"DROP USER IF EXISTS '{username}'@'localhost'"
+    execute_query(query)
+
+# Execute a sample query
+def sample_query():
+    try:
+        connection = mysql.connector.connect(**DB_CONFIG)
+        cursor = connection.cursor()
+        cursor.execute("SELECT DATABASE()")
+        db = cursor.fetchone()
+        print(f"Current database: {db[0]}")
+    except Error as e:
+        print(f"Error: {e}")
+    finally:
+        if connection.is_connected():
+            cursor.close()
+            connection.close()
+
+# Example usage
+if __name__ == "__main__":
+    print("Creating database 'sample_db'...")
+    create_database('sample_db')
+    
+    print("Creating user 'sample_user'...")
+    create_user('sample_user', 'password123')
+    
+    print("Granting privileges to 'sample_user' on 'sample_db'...")
+    grant_privileges('sample_user', 'sample_db')
+    
+    print("Executing sample query...")
+    sample_query()
+    
+    print("Dropping user 'sample_user'...")
+    drop_user('sample_user')
+    
+    print("Dropping database 'sample_db'...")
+    drop_database('sample_db')
